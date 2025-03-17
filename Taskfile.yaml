@@ -1,0 +1,22 @@
+version: '3'
+
+vars:
+  ROLE_NAME: "portainer"
+  DEPLOY_CONTAINER_NAME: "deploy_container"
+  DEPLOY_IMAGE_NAME: "kirillsilianov/deploy_image"
+  DEPLOY_IMAGE_VERSION: "3.1.0"
+  CURRENT_UID:
+    sh: "id -u"
+  CURRENT_GID:
+    sh: "id -g"
+
+tasks:
+  init_role:
+    label: "Init example role scaffolding"
+    preconditions:
+      - "mkdir -p ./role"
+    cmds:
+      - "docker run -it --rm -v ./role:/workdir --name {{ .DEPLOY_CONTAINER_NAME }} {{ .DEPLOY_IMAGE_NAME }}:{{ .DEPLOY_IMAGE_VERSION }} ansible-galaxy init --init-path ./ {{ .ROLE_NAME }}"
+      - "docker run -it --rm -v ./role:/workdir --name {{ .DEPLOY_CONTAINER_NAME }} {{ .DEPLOY_IMAGE_NAME }}:{{ .DEPLOY_IMAGE_VERSION }} chown -R {{ .CURRENT_UID }}:{{ .CURRENT_GID }} ./{{ .ROLE_NAME }}"
+      - "mv ./role/{{ .ROLE_NAME }}/* ./"
+      - "rm -rf ./role"
